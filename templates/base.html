@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui/dist/semantic.min.js"></script>
+    <link rel="icon" type="image/png" href="/assets//itsclogo.jpg" />
+    <title>ITS - Certificates Dashboard</title>
+</head>
+<body id="root">
+<div class="ui top fixed menu">
+    <div class="item">
+        <img src="/assets/itsclogo.jpg">
+    </div>
+    <a class="active item">Certificates Dashboard</a>
+    <div class="right menu">
+        <a class="item" href="https://certs.itsolutionsco.com/.auth/login/aad/callback">Logout</a>
+    </div>
+</div>
+
+<div class="ui hidden divider"></div>
+<div class="ui hidden divider"></div>
+<div class="ui hidden divider"></div>
+
+<div class="ui message">
+    <div class="header">
+        Add your certificate common names and they will be monitored below
+    </div>
+    <ul class="list">
+        <li><i class="plus icon"></i>will add the input certificate to the database</li>
+        <li><i class="paper plane icon"></i>will send email to helpdesk and create a ticket</li>
+        <li><i class="trash alternate icon"></i>will remove the selected certificate from the database</li>
+        <li><i class="green checkmark icon"></i>means the certificate is valid and not expiring soon</li>
+        <li><i class="red attention icon"></i>means the certificate is expiring in < 30 days and needs action</li>
+        <li>The logout button needs  to be fixed lol</li>
+    </ul>
+</div>
+
+<div class="ui segment">
+    <form class="ui form" action="/add" method="post">
+        <div class="four wide field">
+            <label>
+                Common Name<br>
+                <input type="text" name="common_name" placeholder="example.com" required>
+            </label>
+        </div>
+        <button class="ui icon button">
+            <i class="plus icon"></i>
+        </button>
+    </form>
+</div>
+
+{% if show_error %}
+<div class="ui floating negative message">
+    <div class="header">
+        Invalid name
+    </div>
+    <p>Unable to complete TLS handshake, make sure the name is valid, reachable on port 443 and the endpoint supports
+        RFC5746 secure renegotiation</p>
+</div>
+{% endif %}
+
+{% if show_success %}
+<div class="ui floating positive message">
+    <div class="header">
+        Email sent
+    </div>
+    <p>Notification email has been sent to helpdesk@itsolutionsco.com</p>
+</div>
+{% endif %}
+
+<div class="ui blue segment">
+    <table class="ui table">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Common Name</th>
+            <th>Not Before</th>
+            <th>Not After</th>
+            <th>Status</th>
+            <th>Ticket</th>
+            <th>Remove</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for cert in certificates %}
+        {% if cert.cert_status == "Valid" %}
+        <tr>
+            <td>{{ cert.cert_id }}</td>
+            <td>{{ cert.common_name }}</td>
+            <td>{{ cert.not_before }}</td>
+            <td>{{ cert.not_after }}</td>
+            <td><i class="green checkmark icon"></i></td>
+            <td>
+                <a class="ui icon tiny button" href="/email/{{ cert.cert_id }}">
+                    <i class="paper plane icon"></i>
+                </a>
+            </td>
+            <td>
+                <a class="ui icon tiny button" href="/delete/{{ cert.cert_id }}">
+                    <i class="trash alternate icon"></i>
+                </a>
+            </td>
+        </tr>
+        {% else %}
+        <tr class="negative">
+            <td>{{ cert.cert_id }}</td>
+            <td>{{ cert.common_name }}</td>
+            <td>{{ cert.not_before }}</td>
+            <td>{{ cert.not_after }}</td>
+            <td><i class="attention icon"></i></td>
+            <td>
+                <a class="ui icon tiny button" href="/email/{{ cert.cert_id }}">
+                    <i class="paper plane icon"></i>
+                </a>
+            </td>
+            <td>
+                <a class="ui icon tiny button" href="/delete/{{ cert.cert_id }}">
+                    <i class="trash alternate icon"></i>
+                </a>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
